@@ -1,5 +1,9 @@
-html, body, #root {
+html, body {
   margin: 0;
   padding: 0; }
+
+html, body, #root, .rootDiv, .mapDiv {
+  height: 100%;
+  width: 100%; }
 
 /*# sourceMappingURL=bundle.css.map */

@@ -1,7 +1,7 @@
 {
 "version": 3,
-"mappings": "AACA,iBAAkB;EAChB,MAAM,EAAE,CAAC;EACT,OAAO,EAAE,CAAC",
-"sources": ["../scss/main.scss"],
+"mappings": "AACA,UAAW;EACT,MAAM,EAAE,CAAC;EACT,OAAO,EAAE,CAAC;;ACFZ,oCAAqC;EACnC,MAAM,EAAE,IAAI;EACZ,KAAK,EAAE,IAAI",
+"sources": ["../scss/reset.scss","../scss/main.scss"],
 "names": [],
 "file": "bundle.css"
 }

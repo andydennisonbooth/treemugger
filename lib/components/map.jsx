@@ -1,20 +1,60 @@
 import React from 'react';
+import GoogleMapsLoader from 'google-maps';
+import { connect } from 'react-redux';
 
-export default class extends React.Component {
-  render() {
-    // <iframe
-    //   ref={el => { this.mapFrame = el; }}
-    //   width={window.innerWidth}
-    //   height={window.innerHeight}
-    //   frameBorder="0"
-    //   allowFullScreen
-    //   src="https://www.google.com/maps/embed/v1/view?zoom=11&center=37.7749%2C-122.4194&key=AIzaSyA3ZCGG6YT105EPvKzM6a4dVgjQrDmEsbk">
-    // </iframe>
-    return (
-      <div
-        ref={el => { this.mapDiv = el; }}
-        >
-      </div>
-    );
+const mapStateToProps = ({ position }) => ({
+  position
+});
+
+const mapDispatchToProps = dispatch => ({});
+
+export default connect(mapStateToProps, mapDispatchToProps)(
+  class extends React.Component {
+    constructor(props) {
+      super(props);
+
+      this.state = {
+        map: null
+      };
+    }
+
+    componentDidMount() {
+      GoogleMapsLoader.KEY = 'AIzaSyCmIJEHMJa3a_uJHWhmwk-343tzf4b5chk';
+      GoogleMapsLoader.load(google => {
+        this.setState({
+          map: new google.maps.Map(this.mapDiv, {
+            center: {
+              lat: 37.754709,
+              lng: -122.4424069
+            },
+            zoom: 13,
+            mapTypeId: 'hybrid',
+            disableDefaultUI: true
+          })
+        });
+      });
+    }
+
+    componentDidUpdate() {
+      if (this.props.position) {
+        const map = this.state.map;
+        if (map) {
+          map.setCenter({
+            lat: this.props.position.coords.latitude,
+            lng: this.props.position.coords.longitude
+          })
+        }
+      }
+    }
+
+    render() {
+      return (
+        <div
+          className="mapDiv"
+          ref={el => { this.mapDiv = el; }}
+          >
+        </div>
+      );
+    }
   }
-}
+);
