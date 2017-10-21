@@ -23840,16 +23840,23 @@ var _lodash = __webpack_require__(88);
 var _actions = __webpack_require__(89);
 
 var defaultState = {
-  position: null
+  position: null,
+  trees: null
 };
 
-exports.default = function (state, action) {
+exports.default = function () {
+  var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : defaultState;
+  var action = arguments[1];
+
   Object.freeze(state);
   var stateCopy = (0, _lodash.merge)({}, state);
 
   switch (action.type) {
     case _actions.RECEIVE_POSITION:
       return (0, _lodash.merge)(stateCopy, { position: action.position });
+
+    case _actions.RECEIVE_TREES:
+      return (0, _lodash.merge)(stateCopy, { trees: action.trees });
 
     default:
       return state;
@@ -23966,6 +23973,8 @@ var _googleMaps2 = _interopRequireDefault(_googleMaps);
 
 var _reactRedux = __webpack_require__(96);
 
+var _lodash = __webpack_require__(88);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -23975,9 +23984,10 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var mapStateToProps = function mapStateToProps(_ref) {
-  var position = _ref.position;
+  var position = _ref.position,
+      trees = _ref.trees;
   return {
-    position: position
+    position: position, trees: trees
   };
 };
 
@@ -23994,7 +24004,9 @@ exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(
     var _this = _possibleConstructorReturn(this, (_class.__proto__ || Object.getPrototypeOf(_class)).call(this, props));
 
     _this.state = {
-      map: null
+      google: null,
+      map: null,
+      markers: []
     };
     return _this;
   }
@@ -24007,13 +24019,14 @@ exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(
       _googleMaps2.default.KEY = 'AIzaSyCmIJEHMJa3a_uJHWhmwk-343tzf4b5chk';
       _googleMaps2.default.load(function (google) {
         _this2.setState({
+          google: google,
           map: new google.maps.Map(_this2.mapDiv, {
             center: {
               lat: 37.754709,
               lng: -122.4424069
             },
             zoom: 13,
-            mapTypeId: 'hybrid',
+            mapTypeId: 'satellite',
             disableDefaultUI: true
           })
         });
@@ -24021,14 +24034,40 @@ exports.default = (0, _reactRedux.connect)(mapStateToProps, mapDispatchToProps)(
     }
   }, {
     key: 'componentDidUpdate',
-    value: function componentDidUpdate() {
-      if (this.props.position) {
-        var map = this.state.map;
-        if (map) {
+    value: function componentDidUpdate(prevProps) {
+      var map = this.state.map;
+      if (map) {
+        // Update map position on location update
+        if (!(0, _lodash.isEqual)(this.props.position, prevProps.position)) {
           map.setCenter({
             lat: this.props.position.coords.latitude,
             lng: this.props.position.coords.longitude
           });
+          map.setZoom(18);
+        }
+
+        // Update map markers on tree data update
+        if (!(0, _lodash.isEqual)(this.props.trees, prevProps.trees)) {
+          // Remove old markers
+          this.state.markers.forEach(function (marker) {
+            marker.setMap(null);
+            marker = null;
+          });
+
+          // Populate new markers
+          var newMarkers = [];
+          this.props.trees.forEach(function (tree) {
+            newMarkers.push(new google.maps.Marker({
+              position: {
+                lat: parseFloat(tree.latitude),
+                lng: parseFloat(tree.longitude)
+              },
+              title: tree.qspecies,
+              map: map
+            }));
+          });
+
+          this.setState({ markers: newMarkers });
         }
       }
     }
